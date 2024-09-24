@@ -6,10 +6,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         api = KoreaInvestAPI()
-        token_response = api.get_token()
+        token = api.get_token()
 
-        if 'error' in token_response:
-            self.stdout.write(self.style.ERROR(token_response['error']))
+        if token is None:
+            self.stdout.write(self.style.ERROR("Failed to retrieve access token."))
         else:
-            access_token = token_response.get('access_token', 'No token found')
-            self.stdout.write(self.style.SUCCESS(f"Access Token: {access_token}"))
+            self.stdout.write(self.style.SUCCESS(f"Access Token: {token}"))

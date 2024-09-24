@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
+import platform
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -139,3 +140,14 @@ SIM_API_DOMAIN = os.getenv('SIM_API_DOMAIN')
 
 # 모의/실전 구분 플래그
 USE_SIMULATED_API = os.getenv('USE_SIMULATED_API', 'False') == 'True'
+
+if platform.system() == 'Windows':
+    cache_location = 'C:\\temp\\django_cache'
+else:
+    cache_location = '/tmp/django_cache' 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': cache_location,
+    }
+}
