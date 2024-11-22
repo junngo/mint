@@ -23,6 +23,19 @@ python manage.py get_token
 
 This command retrieves the access token based on your current environment settings (real or simulated). The environment is controlled via the USE_SIMULATED_API flag in your .env file.
 
+- Fetch Stock listing data
+To fetch and update stock data for KOSPI and KOSDAQ:
+
+```
+python manage.py fetch_stock_code
+```
+
+- Fetch Daily stock data such as OHLCV
+
+```
+python manage.py fetch_daily_stock_data
+```
+
 ---
 
 ### Setup Instructions

@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import requests
+import time
 import zipfile
 
 from django.conf import settings
@@ -186,3 +187,36 @@ class KoreaInvestAPI:
         
         print("Data processing completed.")
         return df
+
+    def fetch_daily_stock_data(self, ticker, start_date, end_date, period_code, adj_price_flag=0):
+        """
+        날짜에 대한 주식 금액 데이터 가져오기
+        """
+        authorization  = self.get_token()
+        if not authorization:
+            return {"error": "Failed to authenticate"}
+
+        url = f"{self.api_domain}/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice"
+        headers = {
+            "content-type": "application/json; charset=utf-8",
+            "authorization": f"Bearer {authorization}",
+            "appkey": self.app_key,
+            "appsecret": self.app_secret,
+            "tr_id": "FHKST03010100",       # 실전투자/모의투자
+            "custtype": "P"                 # 개인:P, 법인:B
+        }
+        params = {
+            "FID_COND_MRKT_DIV_CODE": "J",          # J: 주식,ETF,ETN
+            "FID_INPUT_ISCD": ticker,               # 종목번호 (6자리)
+            "FID_INPUT_DATE_1": start_date,         # 조회 시작일자 (ex. 20220501)
+            "FID_INPUT_DATE_2": end_date,           # 조회 종료일자 (ex. 20220530)
+            "FID_PERIOD_DIV_CODE": period_code,     # 기간 분류 코드 (D: 일봉, W: 주봉, M: 월봉, Y: 년봉)
+            "FID_ORG_ADJ_PRC": adj_price_flag,      # 수정주가 여부 (0: 수정주가, 1: 원주가)
+        }
+        time.sleep(0.5)
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            # print(f"Failed to fetch stock data: {response.json()}")
+            return {"error": f"Failed to fetch data, status code: {response.status_code}"}
