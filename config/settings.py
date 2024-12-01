@@ -131,8 +131,10 @@ load_dotenv()
 # 실전 및 모의 투자 계좌 정보
 LIVE_APP_KEY = os.getenv('LIVE_APP_KEY')
 LIVE_APP_SECRET = os.getenv('LIVE_APP_SECRET')
+LIVE_INVEST_ACCOUNT_NUMBER = os.getenv('LIVE_INVEST_ACCOUNT_NUMBER')
 SIM_APP_KEY = os.getenv('SIM_APP_KEY')
 SIM_APP_SECRET = os.getenv('SIM_APP_SECRET')
+SIM_INVEST_ACCOUNT_NUMBER = os.getenv('SIM_INVEST_ACCOUNT_NUMBER')
 
 # 도메인 정보
 LIVE_API_DOMAIN = os.getenv('LIVE_API_DOMAIN')

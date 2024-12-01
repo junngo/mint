@@ -60,8 +60,10 @@ pip install -r requirements.txt
 ```
 LIVE_APP_KEY=your_live_app_key
 LIVE_APP_SECRET=your_live_app_secret
+LIVE_INVEST_ACCOUNT_NUMBER=your_live_account_number
 SIM_APP_KEY=your_sim_app_key
 SIM_APP_SECRET=your_sim_app_secret
+SIM_INVEST_ACCOUNT_NUMBER=your_sim_account_number
 LIVE_API_DOMAIN=https://openapi.koreainvestment.com:9443
 SIM_API_DOMAIN=https://openapivts.koreainvestment.com:29443
 USE_SIMULATED_API=True

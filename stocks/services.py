@@ -15,10 +15,12 @@ class KoreaInvestAPI:
             self.app_key = settings.SIM_APP_KEY
             self.app_secret = settings.SIM_APP_SECRET
             self.api_domain = settings.SIM_API_DOMAIN
+            self.account_number = settings.SIM_INVEST_ACCOUNT_NUMBER
         else:
             self.app_key = settings.LIVE_APP_KEY
             self.app_secret = settings.LIVE_APP_SECRET
             self.api_domain = settings.LIVE_API_DOMAIN
+            self.account_number = settings.LIVE_INVEST_ACCOUNT_NUMBER
 
         self.token_cache_key = 'korea_invest_api_token'
         self.token_expiry_time = 1430 * 60  # 1430분(23시간 50분) * 60초
@@ -220,3 +222,52 @@ class KoreaInvestAPI:
         else:
             # print(f"Failed to fetch stock data: {response.json()}")
             return {"error": f"Failed to fetch data, status code: {response.status_code}"}
+
+    def place_cash_order(self, pdno, ord_dvsn, ord_qty, ord_unpr, order_type):
+        """
+        주식 현금 주문 요청 함수 (매수/매도 공용)
+        :param pdno: 종목코드
+        :param ord_dvsn: 주문구분 (00:지정가, 01:시장가)
+        :param ord_qty: 주문수량
+        :param ord_unpr: 주문단가
+        :param order_type: 주문유형 (BUY:매수, SELL:매도)
+        :return: API 응답 JSON 또는 오류 메시지
+        """
+        authorization = self.get_token()
+        if not authorization:
+            return {"error": "Failed to authenticate"}
+
+        tr_id = {
+            "BUY": "VTTC0802U" if settings.USE_SIMULATED_API else "TTTC0802U",  # 매수
+            "SELL": "VTTC0801U" if settings.USE_SIMULATED_API else "TTTC0801U"  # 매도
+        }.get(order_type.upper())
+        if not tr_id:
+            return {"error": f"Invalid order type: {order_type}"}
+
+        url = f"{self.api_domain}/uapi/domestic-stock/v1/trading/order-cash"
+        headers = {
+            "content-type": "application/json; charset=utf-8",
+            "authorization": f"Bearer {authorization}",
+            "appkey": self.app_key,
+            "appsecret": self.app_secret,
+            "tr_id": tr_id,
+            "custtype": "P"                  # P:개인, B:법인
+        }
+        body = {
+            "CANO": self.account_number[:8],            # 종합계좌번호
+            "ACNT_PRDT_CD": self.account_number[-2:],   # 계좌상품코드
+            "PDNO": pdno,                               # 종목코드
+            "ORD_DVSN": ord_dvsn,                       # 주문구분
+            "ORD_QTY": str(ord_qty),                    # 주문수량 (String)
+            "ORD_UNPR": str(ord_unpr)                   # 주문단가 (String)
+        }
+
+        response = requests.post(url, headers=headers, json=body)
+
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {
+                "error": f"Failed to place order, status code: {response.status_code}",
+                "details": response.json()
+            }
