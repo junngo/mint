@@ -47,26 +47,30 @@ class Command(BaseCommand):
                 self.fetch_data_for_ticker(api, stock.ticker, start_date, end_date, period_code)
 
     def fetch_data_for_ticker(self, api, ticker, start_date, end_date, period_code):
-        current_date = start_date
-        while current_date <= end_date:
-            start_date_str = current_date.strftime('%Y%m%d')
-            end_date_str = current_date.strftime('%Y%m%d')
+        current_start_date = start_date
+        while current_start_date <= end_date:
+            crruent_end_date = min(current_start_date + timedelta(days=90), end_date)
+            start_date_str = current_start_date.strftime("%Y%m%d")
+            end_date_str = crruent_end_date.strftime("%Y%m%d")
 
             self.stdout.write(f"Fetching data for {ticker} on {start_date_str} - {end_date_str}...")
             data = api.fetch_daily_stock_data(ticker, start_date_str, end_date_str, period_code)
 
             if "error" in data:
-                self.stdout.write(self.style.ERROR(f"Failed to fetch data for {ticker} on {current_date}: {data['error']}"))
+                self.stdout.write(self.style.ERROR(f"Failed to fetch data for {ticker} on {start_date_str} - {end_date_str}: {data['error']}"))
             else:
                 self.save_daily_data(ticker, data)
 
-            current_date += timedelta(days=1)
+            current_start_date = crruent_end_date + timedelta(days=1)
 
     def save_daily_data(self, ticker, data):
         try:
             stock = Stock.objects.get(ticker=ticker)
 
             for record in data.get('output2', []):
+                if not record or 'stck_bsop_date' not in record:
+                    continue  # 빈 데이터 건너뛰기
+
                 business_date = datetime.strptime(record['stck_bsop_date'], '%Y%m%d').date()
                 close_price = float(record['stck_clpr'])
                 open_price = float(record['stck_oprc'])
